@@ -5,8 +5,7 @@ COPY . .
 RUN make all_platforms 
 
 
-FROM registry.access.redhat.com/rhscl/httpd-24-rhel7
-# Image registry.redhat.io/rhel8/httpd-24 needs authentication
+FROM registry.redhat.io/rhel8/httpd-24
 
 # Add application sources
 RUN mkdir -p /var/www/html/kam
