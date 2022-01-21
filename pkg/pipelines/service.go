@@ -207,7 +207,11 @@ func updateKustomization(appFs afero.Fs, base string) error {
 }
 
 func makeSvcImageBindingName(envName, appName, svcName string) string {
-	return fmt.Sprintf("%s-%s-%s-binding", envName, appName, svcName)
+	bindingName := fmt.Sprintf("%s-%s-%s", envName, appName, svcName)
+	if len(bindingName) > 54 {
+		bindingName = bindingName[:54]
+	}
+	return fmt.Sprintf("%s-binding", bindingName)
 }
 
 func makeSvcImageBindingFilename(bindingName string) string {
