@@ -236,7 +236,7 @@ func bootstrapResources(o *BootstrapOptions, appFs afero.Fs) (res.Resources, res
 	if app == nil {
 		return nil, nil, errors.New("unable to bootstrap without application")
 	}
-	svcFiles, err := bootstrapServiceDeployment(devEnv, app)
+	svcFiles, err := bootstrapServiceDeployment(devEnv, app, devEnv.Apps[0].Services[0])
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create bootstrap service: %w", err)
 	}
@@ -288,8 +288,7 @@ func bootstrapResources(o *BootstrapOptions, appFs afero.Fs) (res.Resources, res
 	return bootstrapped, otherResources, nil
 }
 
-func bootstrapServiceDeployment(dev *config.Environment, app *config.Application) (res.Resources, error) {
-	svc := dev.Apps[0].Services[0]
+func bootstrapServiceDeployment(dev *config.Environment, app *config.Application, svc *config.Service) (res.Resources, error) {
 	svcBase := filepath.Join(config.PathForService(app, dev, svc.Name), "base", "config")
 	resources := res.Resources{}
 	// TODO: This should change if we add Namespace to Environment.

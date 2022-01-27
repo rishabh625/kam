@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/redhat-developer/kam/pkg/pipelines/config"
 	"github.com/redhat-developer/kam/pkg/pipelines/environments"
 	"github.com/redhat-developer/kam/pkg/pipelines/eventlisteners"
@@ -43,6 +42,13 @@ func AddService(o *AddServiceOptions, appFs afero.Fs) error {
 		return err
 	}
 
+	cfgFiles, err := getConfigFolder(m, appFs, o)
+	if err != nil {
+		return fmt.Errorf("Failed to create config folder : %v", err)
+	}
+
+	files = res.Merge(cfgFiles, files)
+
 	_, err = yaml.WriteResources(appFs, o.PipelinesFolderPath, files)
 	if err != nil {
 		return err
@@ -50,10 +56,6 @@ func AddService(o *AddServiceOptions, appFs afero.Fs) error {
 	_, err = yaml.WriteResources(appFs, filepath.Join(o.PipelinesFolderPath, ".."), otherResources) // Don't call filepath.ToSlash
 	if err != nil {
 		return err
-	}
-	err = createConfigFolder(m, appFs, o)
-	if err != nil {
-		return fmt.Errorf("Failed to create config folder : %v", err)
 	}
 	cfg := m.GetPipelinesConfig()
 	if cfg != nil {
@@ -225,18 +227,8 @@ func createSvcImageBinding(cfg *config.PipelinesConfig, env *config.Environment,
 	return name, filename, res.Resources{resourceFilePath: triggers.CreateImageRepoBinding(cfg.Name, name, imageRepo, strconv.FormatBool(isTLSVerify))}
 }
 
-func createConfigFolder(m *config.Manifest, appFs afero.Fs, o *AddServiceOptions) error {
-	basePath, err := homedir.Expand(o.PipelinesFolderPath)
-	if err != nil {
-		return fmt.Errorf("Cannot expand the pipelines.yaml path : %s", o.PipelinesFolderPath)
-	}
+func getConfigFolder(m *config.Manifest, appFs afero.Fs, o *AddServiceOptions) (res.Resources, error) {
 	env := m.GetEnvironment(o.EnvName)
 	app := m.GetApplication(o.EnvName, o.AppName)
-	servicePath := config.PathForService(app, env, o.ServiceName)
-	finalPath := filepath.Join(basePath, servicePath, "base", "config")
-	err = appFs.MkdirAll(finalPath, 0755)
-	if err != nil {
-		return fmt.Errorf("failed to MkDirAll")
-	}
-	return nil
+	return bootstrapServiceDeployment(env, app, createService(o.ServiceName, o.GitRepoURL))
 }

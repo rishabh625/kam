@@ -9,10 +9,12 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/redhat-developer/kam/pkg/pipelines/argocd"
 	"github.com/redhat-developer/kam/pkg/pipelines/config"
+	"github.com/redhat-developer/kam/pkg/pipelines/deployment"
 	"github.com/redhat-developer/kam/pkg/pipelines/eventlisteners"
 	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
 	"github.com/redhat-developer/kam/pkg/pipelines/meta"
 	res "github.com/redhat-developer/kam/pkg/pipelines/resources"
+	"github.com/redhat-developer/kam/pkg/pipelines/routes"
 	"github.com/redhat-developer/kam/pkg/pipelines/secrets"
 	"github.com/redhat-developer/kam/pkg/pipelines/triggers"
 	"github.com/spf13/afero"
@@ -345,7 +347,7 @@ func TestAddServiceFilePaths(t *testing.T) {
 	}
 }
 
-func TestAddServiceFolderPaths(t *testing.T) {
+func TestAddServiceReources(t *testing.T) {
 	fakeFs := ioutils.NewMemoryFilesystem()
 	outputPath := afero.GetTempDir(fakeFs, "test")
 	pipelinesPath := filepath.Join(outputPath, pipelinesFile) // Don't call filepath.ToSlash
@@ -354,8 +356,20 @@ func TestAddServiceFolderPaths(t *testing.T) {
 	assertNoError(t, err)
 	err = afero.WriteFile(fakeFs, pipelinesPath, b, 0644)
 	assertNoError(t, err)
-	wantedPaths := []string{
-		"environments/test-dev/apps/new-app/services/test/base/config",
+	svc := createBootstrapService("new-app", "test-dev", "new-svc")
+	route, err := routes.NewFromService(svc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantedFiles := res.Resources{
+		"environments/test-dev/apps/new-app/services/new-svc/base/config/100-deployment.yaml": deployment.Create(
+			"new-app", "test-dev", "new-svc", bootstrapImage,
+			deployment.ContainerPort(8080)),
+		"environments/test-dev/apps/new-app/services/new-svc/base/config/200-service.yaml": svc,
+		"environments/test-dev/apps/new-app/services/new-svc/base/config/300-route.yaml":   route,
+		"environments/test-dev/apps/new-app/services/new-svc/base/config/kustomization.yaml": &res.Kustomization{
+			Resources: []string{"100-deployment.yaml", "200-service.yaml", "300-route.yaml"},
+		},
 	}
 	err = AddService(&AddServiceOptions{
 		AppName:             "new-app",
@@ -363,17 +377,20 @@ func TestAddServiceFolderPaths(t *testing.T) {
 		GitRepoURL:          "http://github.com/org/test",
 		PipelinesFolderPath: outputPath,
 		WebhookSecret:       "123",
-		ServiceName:         "test",
+		ServiceName:         "new-svc",
 	}, fakeFs)
 	assertNoError(t, err)
-	for _, path := range wantedPaths {
-		t.Run(fmt.Sprintf("checking path %s already exists", path), func(rt *testing.T) {
-			// The inmemory version of Afero doesn't return errors
-			exists, _ := fakeFs.DirExists(filepath.Join(outputPath, path)) // Don't call filepath.ToSlash
-			if !exists {
-				t.Fatalf("The directory does not exist at path : %v", path)
-			}
-		})
+	for path, resource := range wantedFiles {
+		filePath := filepath.Join(outputPath, path)
+		got, err := fakeFs.ReadFile(filePath)
+		assertNoError(t, err)
+
+		want, err := yaml.Marshal(resource)
+		assertNoError(t, err)
+
+		if diff := cmp.Diff(want, got); diff != "" {
+			t.Fatalf("AddServices failed: %s", diff)
+		}
 	}
 }
 
