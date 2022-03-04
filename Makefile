@@ -7,7 +7,7 @@ DARWIN=$(EXECUTABLE)_darwin_amd64
 PKGS := $(shell go list  ./... | grep -v test/e2e | grep -v vendor)
 FMTPKGS := $(shell go list  ./... | grep -v vendor)
 VERSION=$(shell git describe --tags --always --long --dirty)
-LD_FLAGS="-s -w -X github.com/redhat-developer/kam/pkg/cmd/version.Version=$(VERSION)"
+LD_FLAGS='-s -w -X github.com/redhat-developer/kam/pkg/cmd/version.Version=$(VERSION) -extldflags "-Wl,-z,now"'
 
 .PHONY: all_platforms
 all_platforms: windows linux darwin 
