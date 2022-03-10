@@ -85,8 +85,8 @@ func PrepareForE2eTest() error {
 		return err
 	}
 
-	fmt.Printf("Running e2e test in: %v\n", testRunDir)
-	fmt.Printf("Working directory set to: %v\n", testRunDir)
+	//fmt.Printf("Running e2e test in: %v\n", testRunDir)
+	//fmt.Printf("Working directory set to: %v\n", testRunDir)
 
 	return nil
 }

@@ -55,7 +55,7 @@ func StartLog(logPath string) error {
 
 	E2eLog = log.New(logFile, "", log.Ltime|log.Lmicroseconds)
 	LogMessage("info", "Log Initiated")
-	fmt.Println("Log successfully started, logging into:", logPath)
+	//fmt.Println("Log successfully started, logging into:", logPath)
 
 	return nil
 }

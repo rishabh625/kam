@@ -52,7 +52,7 @@ func FeatureContext(s *godog.Suite) {
 		waitPass)
 
 	s.BeforeSuite(func() {
-		fmt.Println("Before suite")
+		//fmt.Println("Before suite")
 		if !envVariableCheck() {
 			os.Exit(1)
 		}
@@ -63,19 +63,19 @@ func FeatureContext(s *godog.Suite) {
 	})
 
 	s.AfterSuite(func() {
-		fmt.Println("After suite")
+		//fmt.Println("After suite")
 	})
 
 	s.BeforeFeature(func(this *messages.GherkinDocument) {
-		fmt.Println("Before feature")
+		//fmt.Println("Before feature")
 	})
 
 	s.AfterFeature(func(this *messages.GherkinDocument) {
-		fmt.Println("After feature")
+		//fmt.Println("After feature")
 	})
 
 	s.BeforeScenario(func(this *messages.Pickle) {
-		fmt.Println("Before scenario")
+		//fmt.Println("Before scenario")
 
 		// Clearing working directory before each scenario
 		f, err := os.Open("./")
@@ -88,13 +88,13 @@ func FeatureContext(s *godog.Suite) {
 			if err2 != nil {
 				log.Fatal(err2)
 			}
-			fmt.Println("Cleared working directory")
+			//fmt.Println("Cleared working directory")
 		}
 		defer f.Close()
 	})
 
 	s.AfterScenario(func(*messages.Pickle, error) {
-		fmt.Println("After scenario")
+		//fmt.Println("After scenario")
 		re := regexp.MustCompile(`[a-z]+`)
 		scm := re.FindAllString(os.Getenv("GITOPS_REPO_URL"), 2)[1]
 
@@ -108,7 +108,7 @@ func FeatureContext(s *godog.Suite) {
 				fmt.Println(errMessage)
 			}
 		default:
-			fmt.Println("SCM is not supported")
+			//fmt.Println("SCM is not supported")
 		}
 	})
 }
@@ -120,7 +120,7 @@ func envVariableCheck() bool {
 		for _, envVar := range envVars {
 			_, ok := os.LookupEnv(envVar)
 			if !ok {
-				fmt.Printf("%s is not set\n", envVar)
+				//fmt.Printf("%s is not set\n", envVar)
 				return false
 			}
 		}
@@ -134,14 +134,14 @@ func envVariableCheck() bool {
 		case "gitlab":
 			os.Setenv("GITLAB_TOKEN", os.Getenv("GIT_ACCESS_TOKEN"))
 		default:
-			fmt.Println("SCM is not supported")
+			//fmt.Println("SCM is not supported")
 		}
 	} else {
 		if val == "prow" {
-			fmt.Printf("Running e2e test in OpenShift CI\n")
+			//fmt.Printf("Running e2e test in OpenShift CI\n")
 			majorVersion, err := openhiftServerVersion()
 			if err != nil {
-				fmt.Printf("OpenShift API server version not found\n")
+				//fmt.Printf("OpenShift API server version not found\n")
 				return false
 			}
 			os.Setenv("SERVICE_REPO_URL", "https://github.com/kam-bot/taxi")
@@ -151,7 +151,7 @@ func envVariableCheck() bool {
 			os.Setenv("DOCKERCONFIGJSON_PATH", os.Getenv("KAM_QUAY_DOCKER_CONF_SECRET_FILE"))
 			os.Setenv("GIT_ACCESS_TOKEN", os.Getenv("GITHUB_TOKEN"))
 		} else {
-			fmt.Printf("You cannot run e2e test locally against OpenShift CI\n")
+			//fmt.Printf("You cannot run e2e test locally against OpenShift CI\n")
 			return false
 		}
 		return true
@@ -162,7 +162,7 @@ func envVariableCheck() bool {
 func deleteGitlabRepository(arg []string) (bool, string) {
 	var stderr bytes.Buffer
 	cmd := exec.Command("glab", arg...)
-	fmt.Println("gitlab command is : ", cmd.Args)
+	//fmt.Println("gitlab command is : ", cmd.Args)
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
@@ -186,9 +186,9 @@ func deleteGithubRepository(repoURL, token string) {
 	}
 	_, err = repo.Repositories.Delete(context.TODO(), repoName)
 	if err != nil {
-		log.Printf("unable to delete repository %v: %v", repoName, err)
+		//log.Printf("unable to delete repository %v: %v", repoName, err)
 	} else {
-		log.Printf("Successfully deleted repository: %q", repoURL)
+		//log.Printf("Successfully deleted repository: %q", repoURL)
 	}
 }
 
@@ -233,7 +233,7 @@ func createRepository(repo string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Created repositry: %v\n", name)
+	//fmt.Printf("Created repositry: %v\n", name)
 	return nil
 }
 
@@ -254,7 +254,7 @@ func createPR() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("PR has been created")
+	//fmt.Println("PR has been created")
 	return nil
 }
 
@@ -272,7 +272,7 @@ func mergePR() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("PR has been merged!")
+	//fmt.Println("PR has been merged!")
 	return nil
 }
 
@@ -309,23 +309,23 @@ func waitPass() error {
 		return err
 	}
 
-	fmt.Println("Waiting for checks to pass")
+	//fmt.Println("Waiting for checks to pass")
 	err = wait.Poll(time.Second*1, time.Minute*20, func() (bool, error) {
 
 		output, err := exec.Command(ocPath, "get", "pipelinerun", "-n", "cicd", "--sort-by=.status.startTime", "-o", "jsonpath='{.items[-1].status.conditions[0].status}'").Output()
 		if err != nil {
-			fmt.Println("Error:", err)
+			//fmt.Println("Error:", err)
 			return false, err
 		}
 
 		if string(output) == "'Unknown'" {
-			fmt.Print(".")
+			//fmt.Print(".")
 			return false, nil
 		} else if string(output) == "'True'" {
-			fmt.Println("\nPR is ready to be merged, all checks passed!")
+			//fmt.Println("\nPR is ready to be merged, all checks passed!")
 			return true, nil
 		} else {
-			fmt.Println("\nOne or more checks failed!")
+			//fmt.Println("\nOne or more checks failed!")
 			return false, err
 		}
 	})
@@ -361,7 +361,7 @@ func loginToArgoAPIServer() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Logged in to ArgoCD API server successfully")
+	//fmt.Println("Logged in to ArgoCD API server successfully")
 	return nil
 }
 

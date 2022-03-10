@@ -69,11 +69,10 @@ prepare-test-cluster:
 
 .PHONY: e2e
 e2e:
-GODOG_OPTS = --godog.tags=basic
+GODOG_OPTS = --godog.tags=basic --godog.format=junit
 
 e2e:
-	@go test --timeout=180m ./test/e2e -v $(GODOG_OPTS) 2>&1 | tee test.out
-	@go-junit-report < test.out > report.xml
+	@go test --timeout=180m ./test/e2e -v $(GODOG_OPTS) |& tee report.xml
 
 .PHONY: e2e-local
 e2e-local:
