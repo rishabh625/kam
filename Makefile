@@ -72,7 +72,7 @@ e2e:
 GODOG_OPTS = --godog.tags=basic --godog.format=junit
 
 e2e:
-	@go test --timeout=180m ./test/e2e -v $(GODOG_OPTS) |& tee report.xml
+	@go test --timeout=180m ./test/e2e -v $(GODOG_OPTS) |& tee kam-test.xml
 
 .PHONY: e2e-local
 e2e-local:

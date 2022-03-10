@@ -27,8 +27,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cucumber/messages-go/v10"
 	"github.com/code-ready/clicumber/util"
+	"github.com/cucumber/messages-go/v10"
 )
 
 const (
@@ -179,7 +179,7 @@ func (shell *ShellInstance) Start(shellName string) error {
 		return err
 	}
 
-	fmt.Printf("The %v instance has been started and will be used for testing.\n", shell.name)
+	//fmt.Printf("The %v instance has been started and will be used for testing.\n", shell.name)
 	return err
 }
 
