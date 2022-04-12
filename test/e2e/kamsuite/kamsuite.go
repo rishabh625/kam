@@ -145,7 +145,7 @@ func envVariableCheck() bool {
 				return false
 			}
 			os.Setenv("SERVICE_REPO_URL", "https://github.com/kam-bot/taxi")
-			os.Setenv("GITOPS_REPO_URL", "https://github.com/kam-bot/taxi-"+os.Getenv("PRNO")+majorVersion)
+			os.Setenv("GITOPS_REPO_URL", "https://github.com/kam-bot/gitops-"+os.Getenv("PRNO")+majorVersion)
 			os.Setenv("IMAGE_REPO", "quay.io/kam-bot/taxi")
 			os.Setenv("BUS_REPO_URL", "https://github.com/kam-bot/bus")
 			os.Setenv("DOCKERCONFIGJSON_PATH", os.Getenv("KAM_QUAY_DOCKER_CONF_SECRET_FILE"))
@@ -485,7 +485,7 @@ func openhiftServerVersion() (string, error) {
 		return "", err
 	}
 
-	re := regexp.MustCompile(`Server\s+Version:\s+(\d.{2})`)
+	re := regexp.MustCompile(`Server\s+Version:\s+(4.\d+)`)
 	return strings.Replace(strings.Trim(re.FindStringSubmatch(stdout.String())[1], "\""), ".", "", -1), nil
 }
 
