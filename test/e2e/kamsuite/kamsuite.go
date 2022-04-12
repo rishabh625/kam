@@ -193,7 +193,7 @@ func deleteGithubRepository(repoURL, token string) {
 }
 
 func waitSync(app string, state string) error {
-	err := wait.Poll(time.Second*1, time.Minute*10, func() (bool, error) {
+	err := wait.Poll(time.Second*1, time.Minute*20, func() (bool, error) {
 		return argoAppStatusMatch(state, app)
 	})
 	if err != nil {
