@@ -485,7 +485,7 @@ func openhiftServerVersion() (string, error) {
 		return "", err
 	}
 
-	re := regexp.MustCompile(`Server\s+Version:\s+(4.\d+)`)
+	re := regexp.MustCompile(`Server\s+Version:\s+(\d\.\d\d?)`)
 	return strings.Replace(strings.Trim(re.FindStringSubmatch(stdout.String())[1], "\""), ".", "", -1), nil
 }
 
